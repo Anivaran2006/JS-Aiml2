@@ -1,156 +1,114 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>TechStore</title>
-
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-<!-- Internal CSS -->
+<title>Employee Management</title>
 <style>
 body{
-background:#f8f9fa;
+font-family: Arial;
+background:#f2f2f2;
+text-align:center;
 }
-
-.card:hover{
-transform: scale(1.05);
-transition: 0.3s;
+.container{
+width:400px;
+margin:auto;
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0px 0px 10px gray;
 }
-
-footer{
-margin-top:50px;
+input{
+width:90%;
+padding:8px;
+margin:5px;
+}
+button{
+padding:10px;
+margin:5px;
+background:blue;
+color:white;
+border:none;
+cursor:pointer;
+}
+#result{
+margin-top:20px;
+text-align:left;
 }
 </style>
-
 </head>
 <body>
-
-<!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 <div class="container">
-<a class="navbar-brand" href="#">TechStore</a>
-
-<button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menu">
-<span class="navbar-toggler-icon"></span>
-</button>
-
-<div class="collapse navbar-collapse" id="menu">
-<ul class="navbar-nav ms-auto">
-<li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-<li class="nav-item"><a class="nav-link" href="#">Products</a></li>
-<li class="nav-item"><a class="nav-link" href="#">About</a></li>
-<li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
-</ul>
-</div>
-</div>
-</nav>
-
-<!-- PRODUCTS -->
-<div class="container mt-5">
-<div class="row">
-
-<!-- Card 1 -->
-<div class="col-lg-4 col-md-6 col-12 mb-4">
-<div class="card">
-<img src="https://img.freepik.com/free-photo/laptop-with-sun-background_1232-429.jpg?semt=ais_hybrid&w=740&q=80" width="100px" height="200px" class="card-img-top">
-<div class="card-body">
-<h5>Laptop</h5>
-<p>High performance laptop</p>
-<h6>₹50,000 <span class="badge bg-success">New</span></h6>
-<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#m1">View Details</button>
-</div>
-</div>
-</div>
-
-<!-- Card 2 -->
-<div class="col-lg-4 col-md-6 col-12 mb-4">
-<div class="card">
-<img src="https://darlingretail.com/cdn/shop/files/iPhone_15_Pink_Pure_Back_iPhone_15_Pink_Pure_Front_2up_Screen__WWEN_cfd96ace-df87-4ab3-a96a-e8e9b13bb7b9_800x.jpg?v=1695104022" width="100px" height="200px" class="card-img-top">
-<div class="card-body">
-<h5>Mobile</h5>
-<p>Latest smartphone</p>
-<h6>₹30,000 <span class="badge bg-danger">Sale</span></h6>
-<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#m2">View Details</button>
-</div>
-</div>
-</div>
-
-<!-- Card 3 -->
-<div class="col-lg-4 col-md-6 col-12 mb-4">
-<div class="card">
-<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTndMcJW71HLgi9ntgoterJiJJjLxbtOVVpyA&s" width="100px" height="200px" class="card-img-top">
-<div class="card-body">
-<h5>Headphones</h5>
-<p>Noise cancelling</p>
-<h6>₹5,000 <span class="badge bg-success">New</span></h6>
-<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#m3">View Details</button>
-</div>
-</div>
-</div>
+<h2>Employee Management System</h2>
+<input type="text" id="name" placeholder="Employee Name">
+<input type="text" id="id" placeholder="Employee ID">
+<input type="number" id="salary" placeholder="Salary">
+<input type="text" id="dept" placeholder="Department">
+<br>
+<button onclick="addEmployee()">Add Employee</button>
+<button onclick="displayEmployees()">Display All</button>
+<button onclick="filterSalary()">Salary > 50000</button>
+<button onclick="totalSalary()">Total Salary</button>
+<button onclick="averageSalary()">Average Salary</button>
+<button onclick="countDepartment()">Count Department</button>
+<div id="result"></div>
 
 </div>
-</div>
+<script>
+let employees = [];
+function addEmployee(){
+let name=document.getElementById("name").value;
+let id=document.getElementById("id").value;
+let salary=parseInt(document.getElementById("salary").value);
+let dept=document.getElementById("dept").value;
+let emp={
+name:name,
+id:id,
+salary:salary,
+department:dept
+};
+employees.push(emp);
+alert("Employee Added");
+}
+function displayEmployees(){
+let output="";
+for(let emp of employees){
+output+=emp.name+" | "+emp.id+" | "+emp.salary+" | "+emp.department+"<br>";
+}
+document.getElementById("result").innerHTML=output;
+}
+function filterSalary(){
+let filtered=employees.filter(e=>e.salary>50000);
 
-<!-- MODALS -->
-
-<div class="modal fade" id="m1">
-<div class="modal-dialog">
-<div class="modal-content">
-<div class="modal-header">
-<h5>Laptop Details</h5>
-<button class="btn-close" data-bs-dismiss="modal"></button>
-</div>
-<div class="modal-body">
-16GB RAM, SSD, Fast performance
-</div>
-<div class="modal-footer">
-<button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-</div>
-</div>
-</div>
-</div>
-
-<div class="modal fade" id="m2">
-<div class="modal-dialog">
-<div class="modal-content">
-<div class="modal-header">
-<h5>Mobile Details</h5>
-<button class="btn-close" data-bs-dismiss="modal"></button>
-</div>
-<div class="modal-body">
-High camera quality smartphone
-</div>
-<div class="modal-footer">
-<button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-</div>
-</div>
-</div>
-</div>
-
-<div class="modal fade" id="m3">
-<div class="modal-dialog">
-<div class="modal-content">
-<div class="modal-header">
-<h5>Headphones Details</h5>
-<button class="btn-close" data-bs-dismiss="modal"></button>
-</div>
-<div class="modal-body">
-Best sound quality with bass
-</div>
-<div class="modal-footer">
-<button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-</div>
-</div>
-</div>
-</div>
-
-<!-- FOOTER -->
-<footer class="bg-dark text-white text-center p-3">
-<p>© 2026 TechStore | Follow us on social media</p>
-</footer>
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
+let output="";
+for(let emp of filtered){
+output+=emp.name+" | "+emp.salary+"<br>";
+}
+document.getElementById("result").innerHTML=output;
+}
+function totalSalary(){
+let total=0;
+for(let emp of employees){
+total+=emp.salary;
+}
+document.getElementById("result").innerHTML="Total Salary = "+total;
+}
+function averageSalary(){
+let total=0;
+for(let emp of employees){
+total+=emp.salary;
+}
+let avg=total/employees.length;
+document.getElementById("result").innerHTML="Average Salary = "+avg;
+}
+function countDepartment(){
+let dept=prompt("Enter Department Name");
+let count=0;
+for(let emp of employees){
+if(emp.department==dept){
+count++;
+}
+}
+document.getElementById("result").innerHTML="Employees in "+dept+" = "+count;
+}
+</script>
 </body>
 </html>
