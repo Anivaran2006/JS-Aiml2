@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Employee Management</title>
+
+<style>
+body{
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    text-align:center;
+    color:#333;
+}
+
+.container{
+    width:420px;
+    margin:50px auto;
+    background:#ffffff;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
+h2{
+    color:#764ba2;
+    margin-bottom:15px;
+}
+
+input{
+    width:92%;
+    padding:10px;
+    margin:6px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    outline:none;
+    transition:0.3s;
+}
+
+input:focus{
+    border-color:#667eea;
+    box-shadow:0 0 5px #667eea;
+}
+
+button{
+    padding:10px 12px;
+    margin:5px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    color:white;
+    font-size:14px;
+    transition:0.3s;
+}
+
+/* Different colors for buttons */
+button:nth-child(6){background:#28a745;}   /* Add */
+button:nth-child(7){background:#17a2b8;}   /* Display */
+button:nth-child(8){background:#ffc107; color:black;} /* Filter */
+button:nth-child(9){background:#dc3545;}   /* Total */
+button:nth-child(10){background:#6f42c1;}  /* Average */
+button:nth-child(11){background:#20c997;}  /* Count */
+
+button:hover{
+    transform:scale(1.05);
+    opacity:0.9;
+}
+
+#result{
+    margin-top:20px;
+    text-align:left;
+    background:#f8f9fa;
+    padding:10px;
+    border-radius:8px;
+    max-height:150px;
+    overflow:auto;
+    border:1px solid #ddd;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+<h2>Employee Management System</h2>
+
+<input type="text" id="name" placeholder="Employee Name">
+<input type="text" id="id" placeholder="Employee ID">
+<input type="number" id="salary" placeholder="Salary">
+<input type="text" id="dept" placeholder="Department">
+
+<br>
+
+<button onclick="addEmployee()">Add Employee</button>
+<button onclick="displayEmployees()">Display All</button>
+<button onclick="filterSalary()">Salary > 50000</button>
+<button onclick="totalSalary()">Total Salary</button>
+<button onclick="averageSalary()">Average Salary</button>
+<button onclick="countDepartment()">Count Department</button>
+
+<div id="result"></div>
+</div>
+
+<script>
+let employees = [];
+
+function addEmployee(){
+let name=document.getElementById("name").value;
+let id=document.getElementById("id").value;
+let salary=parseInt(document.getElementById("salary").value);
+let dept=document.getElementById("dept").value;
+
+let emp={
+name:name,
+id:id,
+salary:salary,
+department:dept
+};
+
+employees.push(emp);
+alert("Employee Added");
+}
+
+function displayEmployees(){
+let output="";
+for(let emp of employees){
+output+=emp.name+" | "+emp.id+" | "+emp.salary+" | "+emp.department+"<br>";
+}
+document.getElementById("result").innerHTML=output;
+}
+
+function filterSalary(){
+let filtered=employees.filter(e=>e.salary>50000);
+
+let output="";
+for(let emp of filtered){
+output+=emp.name+" | "+emp.salary+"<br>";
+}
+document.getElementById("result").innerHTML=output;
+}
+
+function totalSalary(){
+let total=0;
+for(let emp of employees){
+total+=emp.salary;
+}
+document.getElementById("result").innerHTML="Total Salary = "+total;
+}
+
+function averageSalary(){
+let total=0;
+for(let emp of employees){
+total+=emp.salary;
+}
+let avg=total/employees.length;
+document.getElementById("result").innerHTML="Average Salary = "+avg;
+}
+
+function countDepartment(){
+let dept=prompt("Enter Department Name");
+let count=0;
+for(let emp of employees){
+if(emp.department==dept){
+count++;
+}
+}
+document.getElementById("result").innerHTML="Employees in "+dept+" = "+count;
+}
+</script>
+
+</body>
+</html>

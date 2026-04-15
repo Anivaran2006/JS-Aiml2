@@ -3,76 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF ↔ Image Converter</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <title>Face Gender Detector</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.10.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@0.0.3/dist/face-landmarks-detection.js"></script>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px}.container{max-width:800px;margin:0 auto;background:white;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,.1);overflow:hidden}header{background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);color:white;text-align:center;padding:40px 20px}header h1{font-size:2.5em;margin-bottom:10px}header p{opacity:.9;font-size:1.1em}.tabs{display:flex;background:#f8f9fa}.tab-btn{flex:1;padding:20px;border:none;background:transparent;font-size:1.1em;font-weight:600;cursor:pointer;transition:all .3s ease}.tab-btn.active{background:white;color:#4facfe;border-bottom:3px solid #4facfe}.tab-content{display:none;padding:40px}.tab-content.active{display:block}.upload-area{border:3px dashed #4facfe;border-radius:15px;padding:60px 20px;text-align:center;cursor:pointer;transition:all .3s ease;margin-bottom:30px;background:#f8fcff}.upload-area:hover{background:#e3f2fd;border-color:#2196f3}.upload-area.dragover{border-color:#2196f3;background:#e3f2fd;transform:scale(1.02)}.upload-icon{font-size:4em;margin-bottom:20px}.upload-area p{font-size:1.2em;color:#333;margin-bottom:10px}.settings{background:#f8f9fa;padding:20px;border-radius:10px;margin-bottom:30px}.settings label{display:flex;align-items:center;gap:10px;font-weight:500}.settings input[type=range]{width:200px;accent-color:#4facfe}.convert-btn{width:100%;padding:20px;font-size:1.2em;font-weight:700;border:none;border-radius:15px;cursor:pointer;transition:all .3s ease;text-transform:uppercase;letter-spacing:1px}.primary{background:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);color:white}.primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 25px rgba(79,172,254,.4)}.primary:disabled{opacity:.6;cursor:not-allowed}.secondary{background:#6c757d;color:white}.progress-container{padding:20px 40px;text-align:center}.progress-bar{width:100%;height:10px;background:#e9ecef;border-radius:5px;overflow:hidden;margin-bottom:10px}.progress-fill{height:100%;background:linear-gradient(90deg,#4facfe,#00f2fe);width:0%;transition:width .3s ease}.download-area{padding:40px;text-align:center;background:#f8fff8;border-top:1px solid #e9ecef}.download-area h3{color:#28a745;margin-bottom:20px;font-size:1.5em}.download-link{display:inline-block;margin:10px;padding:15px 25px;background:#28a745;color:white;text-decoration:none;border-radius:10px;font-weight:600;transition:all .3s ease}.download-link:hover{background:#218838;transform:translateY(-2px)}.file-list{background:#f8f9fa;border-radius:10px;padding:15px;margin-top:10px;max-height:150px;overflow-y:auto}.file-item{padding:5px 0;font-size:.9em;color:#666}@media (max-width:768px){.container{margin:10px;border-radius:15px}header h1{font-size:2em}.tab-btn{padding:15px;font-size:1em}}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.2em;
+            background: linear-gradient(45deg, #fff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .video-container {
+            position: relative;
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        #video {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            background: #000;
+        }
+
+        .result-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.3em;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+
+        .result-overlay.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .gender-male {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+        }
+
+        .gender-female {
+            background: linear-gradient(45deg, #fa709a, #fee140);
+            color: white;
+        }
+
+        .confidence {
+            font-size: 0.8em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-start {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            color: white;
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-start:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(255, 107, 107, 0.6);
+        }
+
+        .btn-stop {
+            background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+            color: white;
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn-stop:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(108, 92, 231, 0.6);
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .status.loading {
+            background: rgba(255, 193, 7, 0.3);
+        }
+
+        .status.ready {
+            background: rgba(40, 167, 69, 0.3);
+        }
+
+        .no-face {
+            color: #ff6b6b;
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>🖼️ PDF ↔ Image Converter</h1>
-            <p>Convert between PDF and Images - 100% FREE • No Uploads</p>
-        </header>
-        <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('pdf-to-img')">📄 PDF → Images</button>
-            <button class="tab-btn" onclick="switchTab('img-to-pdf')">🖼️ Images → PDF</button>
+        <h1>🎭 Face Gender Detector</h1>
+        <p style="margin-bottom: 20px; opacity: 0.9;">Point your camera and see the magic! ✨</p>
+        
+        <div class="video-container">
+            <video id="video" autoplay muted playsinline></video>
+            <div id="resultOverlay" class="result-overlay"></div>
         </div>
-        <div id="pdf-to-img" class="tab-content active">
-            <div class="upload-area" data-tab="pdf">
-                <input type="file" id="pdfInput" accept=".pdf" multiple style="display:none">
-                <div class="upload-icon">📄</div>
-                <p>Click or drag PDF files here</p>
-                <small>Multiple PDFs supported</small>
-                <div id="pdfFileList" class="file-list" style="display:none"></div>
-            </div>
-            <div class="settings">
-                <label>DPI: <input type="range" id="dpiRange" min="72" max="300" value="150"><span id="dpiValue">150</span></label>
-            </div>
-            <button class="convert-btn primary" id="pdfConvertBtn" onclick="convertPdfToImages()">✨ Convert to Images</button>
+        
+        <div class="controls">
+            <button id="startBtn" class="btn-start">🚀 Start Detection</button>
+            <button id="stopBtn" class="btn-stop" disabled>⏹️ Stop</button>
         </div>
-        <div id="img-to-pdf" class="tab-content">
-            <div class="upload-area" data-tab="img">
-                <input type="file" id="imgInput" accept="image/*" multiple style="display:none">
-                <div class="upload-icon">🖼️</div>
-                <p>Click or drag image files here</p>
-                <small>PNG JPG GIF WebP supported</small>
-                <div id="imgFileList" class="file-list" style="display:none"></div>
-            </div>
-            <div class="settings">
-                <label><input type="checkbox" id="keepAspect" checked> Keep aspect ratio</label>
-            </div>
-            <button class="convert-btn primary" id="imgConvertBtn" onclick="convertImagesToPdf()">✨ Convert to PDF</button>
-        </div>
-        <div id="progress" class="progress-container" style="display:none">
-            <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
-            <span id="progressText">Processing...</span>
-        </div>
-        <div id="downloadArea" class="download-area" style="display:none">
-            <h3>✅ All Done!</h3>
-            <div id="downloadLinks"></div>
-            <button class="convert-btn secondary" onclick="clearAll()">🔄 New Conversion</button>
-        </div>
+        
+        <div id="status" class="status">Loading AI models...</div>
+        <div id="noFace" class="no-face" style="display: none;">No face detected 😅</div>
     </div>
+
     <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        let pdfFiles=[],imageFiles=[],currentTab='pdf-to-img';
-        function switchTab(tab){currentTab=tab;document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));document.getElementById(tab).classList.add('active')}
-        document.getElementById('pdfInput').addEventListener('change',e=>{pdfFiles=Array.from(e.target.files);updateFileList('pdfFileList',pdfFiles);imageFiles=[];document.getElementById('imgInput').value='';toggleConvertBtn('pdfConvertBtn',pdfFiles.length>0)});
-        document.getElementById('imgInput').addEventListener('change',e=>{imageFiles=Array.from(e.target.files);updateFileList('imgFileList',imageFiles);pdfFiles=[];document.getElementById('pdfInput').value='';toggleConvertBtn('imgConvertBtn',imageFiles.length>0)});
-        function updateFileList(id,files){const list=document.getElementById(id);list.innerHTML='';if(files.length===0){list.style.display='none';return}files.slice(0,5).forEach(f=>{const d=document.createElement('div');d.className='file-item';d.textContent=f.name;list.appendChild(d)});list.style.display='block'}
-        function toggleConvertBtn(id,enabled){document.getElementById(id).disabled=!enabled}
-        document.querySelectorAll('.upload-area').forEach(a=>{a.addEventListener('dragover',e=>{e.preventDefault();a.classList.add('dragover')});a.addEventListener('dragleave',()=>a.classList.remove('dragover'));a.addEventListener('drop',e=>{e.preventDefault();a.classList.remove('dragover');const files=Array.from(e.dataTransfer.files),input=a.querySelector('input'),tab=a.dataset.tab;if(tab==='pdf'){const pdfs=files.filter(f=>f.type==='application/pdf');input.files=pdfs;document.getElementById('pdfInput').dispatchEvent(new Event('change'))}else{const imgs=files.filter(f=>f.type.startsWith('image/'));input.files=imgs;document.getElementById('imgInput').dispatchEvent(new Event('change'))}});a.addEventListener('click',()=>a.querySelector('input').click())});
-        document.getElementById('dpiRange').addEventListener('input',e=>document.getElementById('dpiValue').textContent=e.target.value);
-        async function convertPdfToImages(){if(pdfFiles.length===0)return alert('Select PDF files first!');showProgress(0);let allImages=[],dpi=parseInt(document.getElementById('dpiRange').value),scale=dpi/72;for(let i=0;i<pdfFiles.length;i++){try{const pdf=pdfFiles[i],pdfDoc=await pdfjsLib.getDocument(URL.createObjectURL(pdf)).promise;for(let p=1;p<=pdfDoc.numPages;p++){const page=await pdfDoc.getPage(p),viewport=page.getViewport({scale}),canvas=document.createElement('canvas');canvas.height=viewport.height;canvas.width=viewport.width;const ctx=canvas.getContext('2d');await page.render({canvasContext:ctx,viewport}).promise;allImages.push({blob:await new Promise(r=>canvas.toBlob(r,'image/png')),name:`${pdf.name.replace(/\.pdf$/,'')}_p${p}.png`});updateProgress((i*pdfDoc.numPages+p)/pdfFiles.length)}}catch(e){console.error(e)}}showDownloadLinks(allImages)}
-        async function convertImagesToPdf(){if(imageFiles.length===0)return alert('Select image files first!');showProgress(0);const {jsPDF}=window.jspdf.jsPDF;const doc=new jsPDF(),keepAspect=document.getElementById('keepAspect').checked;for(let i=0;i<imageFiles.length;i++){const file=imageFiles[i],img=new Image(),imgUrl=URL.createObjectURL(file);await new Promise(r=>{img.onload=()=>r();img.onerror=()=>r();img.src=imgUrl});const pw=doc.internal.pageSize.getWidth(),ph=doc.internal.pageSize.getHeight(),w=pw*.8,h=(img.naturalHeight*w)/img.naturalWidth;if(keepAspect&&h>ph*.8){h=ph*.8;w=(img.naturalWidth*h)/img.naturalHeight}const x=(pw-w)/2,y=(ph-h)/2;if(i>0)doc.addPage();doc.addImage(img,'PNG',x,y,w,h,'','FAST');updateProgress((i+1)/imageFiles.length);URL.revokeObjectURL(imgUrl)}const pdfBlob=doc.output('blob');showDownloadLinks([{blob:pdfBlob,name:`images_to_pdf_${Date.now()}.pdf`}])}
-        function showProgress(p){document.getElementById('progress').style.display='block';document.getElementById('downloadArea').style.display='none'}
-        function updateProgress(p){document.getElementById('progressFill').style.width=`${Math.min(p*100,100)}%`;document.getElementById('progressText').textContent=`${Math.round(p*100)}% Complete`}
-        function showDownloadLinks(files){document.getElementById('progress').style.display='none';const c=document.getElementById('downloadLinks');c.innerHTML='';files.forEach((f,i)=>{const url=URL.createObjectURL(f.blob),a=document.createElement('a');a.href=url;a.download=f.name;a.className='download-link';a.innerHTML=`📥 ${f.name}`;c.appendChild(a);setTimeout(()=>URL.revokeObjectURL(url),6e4)});document.getElementById('downloadArea').style.display='block'}
-        function clearAll(){pdfFiles=[];imageFiles=[];document.getElementById('pdfInput').value='';document.getElementById('imgInput').value='';document.getElementById('pdfFileList').style.display='none';document.getElementById('imgFileList').style.display='none';document.getElementById('downloadArea').style.display='none';toggleConvertBtn('pdfConvertBtn',false);toggleConvertBtn('imgConvertBtn',false);document.querySelector('.tab-btn.active').click()}
-        toggleConvertBtn('pdfConvertBtn',false);toggleConvertBtn('imgConvertBtn',false);
+        class GenderDetector {
+            constructor() {
+                this.video = document.getElementById('video');
+                this.overlay = document.getElementById('resultOverlay');
+                this.status = document.getElementById('status');
+                this.noFaceDiv = document.getElementById('noFace');
+                this.startBtn = document.getElementById('startBtn');
+                this.stopBtn = document.getElementById('stopBtn');
+                
+                this.faceLandmarksModel = null;
+                this.isDetecting = false;
+                this.animationId = null;
+                
+                this.init();
+            }
+
+            async init() {
+                try {
+                    this.status.textContent = 'Loading Face Detection model...';
+                    this.status.className = 'status loading';
+                    
+                    // Load face landmarks detection model
+                    this.faceLandmarksModel = await faceLandmarksDetection.load(
+                        faceLandmarksDetection.SupportedPackages.mediapipeFacemesh
+                    );
+                    
+                    this.status.textContent = 'Ready! Click Start Detection';
+                    this.status.className = 'status ready';
+                    this.startBtn.disabled = false;
+                    
+                } catch (error) {
+                    console.error('Error loading model:', error);
+                    this.status.textContent = 'Error loading model. Please refresh.';
+                    this.status.className = 'status';
+                }
+            }
+
+            async startVideo() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { width: 640, height: 480 } 
+                    });
+                    this.video.srcObject = stream;
+                    await this.video.play();
+                } catch (error) {
+                    console.error('Error accessing camera:', error);
+                    alert('Camera access denied. Please allow camera permission.');
+                }
+            }
+
+            async detectGender() {
+                if (!this.faceLandmarksModel || !this.video.videoWidth) return;
+
+                const predictions = await this.faceLandmarksModel.estimateFaces({
+                    input: this.video
+                });
+
+                if (predictions.length > 0) {
+                    // Simple gender estimation based on facial features
+                    // Using jawline width-to-height ratio and forehead size
+                    const landmarks = predictions[0].keypoints;
+                    
+                    // Key facial landmarks indices (MediaPipe FaceMesh)
+                    const LEFT_EYE = 33;  // Left eye outer
+                    const RIGHT_EYE = 362; // Right eye outer
+                    const NOSE_TIP = 1;   // Nose tip
+                    const JAW_LEFT = 234; // Jaw left
+                    const JAW_RIGHT = 454;// Jaw right
+                    const FOREHEAD = 10;  // Forehead center
+
+                    const leftEye = landmarks[LEFT_EYE];
+                    const rightEye = landmarks[RIGHT_EYE];
+                    const jawLeft = landmarks[JAW_LEFT];
+                    const jawRight = landmarks[JAW_RIGHT];
+                    const forehead = landmarks[FOREHEAD];
+
+                    // Calculate facial ratios
+                    const faceWidth = Math.abs(jawRight.x - jawLeft.x);
+                    const faceHeight = Math.abs(forehead.y - (jawLeft.y + jawRight.y) / 2);
+                    const eyeDistance = Math.abs(rightEye.x - leftEye.x);
+                    
+                    const jawRatio = faceWidth / faceHeight; // Wider jaw = more likely male
+                    const eyeToJawRatio = eyeDistance / faceWidth;
+
+                    // Gender prediction logic (simplified heuristic)
+                    let gender = 'Female';
+                    let confidence = 0;
+
+                    if (jawRatio > 1.6 || eyeToJawRatio < 0.35) {
+                        gender = 'Male';
+                        confidence = Math.min(95, 70 + (jawRatio - 1.5) * 20);
+                    } else {
+                        confidence = Math.min(95, 75 + (1.6 - jawRatio) * 15);
+                    }
+
+                    this.showResult(gender, confidence);
+                    this.noFaceDiv.style.display = 'none';
+                } else {
+                    this.hideResult();
+                    this.noFaceDiv.style.display = 'block';
+                }
+            }
+
+            showResult(gender, confidence) {
+                this.overlay.textContent = `${gender}`;
+                this.overlay.innerHTML += `<div class="confidence">${confidence.toFixed(1)}% confidence</div>`;
+                this.overlay.className = `result-overlay show gender-${gender.toLowerCase()}`;
+            }
+
+            hideResult() {
+                this.overlay.classList.remove('show');
+            }
+
+            async startDetection() {
+                await this.startVideo();
+                this.isDetecting = true;
+                this.startBtn.disabled = true;
+                this.stopBtn.disabled = false;
+                this.status.textContent = 'Detecting... Look at the camera!';
+                
+                const detect = () => {
+                    if (this.isDetecting) {
+                        this.detectGender();
+                        this.animationId = requestAnimationFrame(detect);
+                    }
+                };
+                detect();
+            }
+
+            stopDetection() {
+                this.isDetecting = false;
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+                this.startBtn.disabled = false;
+                this.stopBtn.disabled = true;
+                this.status.textContent = 'Stopped';
+                this.hideResult();
+                this.noFaceDiv.style.display = 'none';
+                
+                if (this.video.srcObject) {
+                    this.video.srcObject.getTracks().forEach(track => track.stop());
+                    this.video.srcObject = null;
+                }
+            }
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            const detector = new GenderDetector();
+
+            document.getElementById('startBtn').addEventListener('click', () => {
+                detector.startDetection();
+            });
+
+            document.getElementById('stopBtn').addEventListener('click', () => {
+                detector.stopDetection();
+            });
+        });
     </script>
 </body>
 </html>
